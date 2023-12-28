@@ -4,8 +4,10 @@ import './App.css';
 function App() {
   const [description, setDescription] = useState('');
   const [generatedImage, setGeneratedImage] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const generateImage = async () => {
+    setIsGenerating(true);
     console.log("Using prompt: " + description)
     const response = await fetch('http://localhost:8000/generate-image', {
       method: 'POST',
@@ -17,6 +19,8 @@ function App() {
 
     const data = await response.json();
     setGeneratedImage(data.image);
+    setIsGenerating(false);
+    console.log("Generated image: " + data.image)
   };
 
   return (
@@ -32,7 +36,8 @@ function App() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the image..."
         />
-        <button onClick={generateImage}>Generate Image</button>
+        <button onClick={generateImage} disabled={isGenerating}>Generate Image</button>
+        {isGenerating && <p>Generating image...</p>}
         {generatedImage && <img src={`data:image/jpeg;base64,${generatedImage}`} alt="Generated" />}
       </div>
     </>

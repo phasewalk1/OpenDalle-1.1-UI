@@ -7,7 +7,7 @@ from diffusers import AutoPipelineForText2Image
 import base64
 import logging
 
-from load_model import load_and_cache_model
+from scripts.load_model import load_and_cache_model
 
 app = FastAPI()
 origins = ["http://localhost:5173"]
@@ -29,7 +29,7 @@ async def startup_event():
 @app.post("/generate-image")
 async def generate_image(request: ImageRequest):
     try:
-        logger.debug('Generating image w/ prompt: ', request.description)
+        logger.info('Generating image w/ prompt: ', request.description)
         if (pipeline != None):
             image = pipeline(request.description).images[0]
             buffered = BytesIO()

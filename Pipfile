@@ -11,6 +11,9 @@ torch = "*"
 huggingface-hub = "*"
 joblib = "*"
 uvicorn = "*"
+python-dotenv = "*"
+requests = "*"
+pillow = "*"
 
 [dev-packages]
 
