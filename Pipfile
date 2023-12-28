@@ -8,6 +8,9 @@ transformers = "*"
 fastapi = {extras = ["all"], version = "*"}
 diffusers = "*"
 torch = "*"
+huggingface-hub = "*"
+joblib = "*"
+uvicorn = "*"
 
 [dev-packages]
 

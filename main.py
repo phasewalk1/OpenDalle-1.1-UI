@@ -1,21 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from diffusers import AutoPipelineForText2Image
-from load_model import load_and_cache_model
-import torch
 from io import BytesIO
+from typing import Optional
+from diffusers import AutoPipelineForText2Image
 import base64
+import logging
+
+from load_model import load_and_cache_model
 
 app = FastAPI()
 origins = ["http://localhost:5173"]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+logging.config.fileConfig('logging.conf', disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 
-pipeline = AutoPipelineForText2Image.from_pretrained('dataautogpt3/OpenDalleV1.1', torch_dtype=torch.float16).to('cuda')
+pipeline = None
 
 class ImageRequest(BaseModel):
     description: str
-
 
 @app.on_event('startup')
 async def startup_event():
@@ -25,8 +28,18 @@ async def startup_event():
 
 @app.post("/generate-image")
 async def generate_image(request: ImageRequest):
-    image = pipeline(request.description).images[0]
-    buffered = BytesIO()
-    image.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    return {"image": img_str}
+    try:
+        logger.debug('Generating image w/ prompt: ', request.description)
+        if (pipeline != None):
+            image = pipeline(request.description).images[0]
+            buffered = BytesIO()
+            image.save(buffered, format="JPEG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            return {"image": img_str}
+    except Exception as e:
+        return {"error": str(e)}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
